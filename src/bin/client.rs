@@ -45,6 +45,11 @@ fn main() {
             cmd_arg.msg_num = 1000;
             client::echo::ping_pong(cmd_arg);
         }
+        "ping_pong_64B_10000" => {
+            cmd_arg.req_size = 64;
+            cmd_arg.msg_num = 10000;
+            client::echo::ping_pong(cmd_arg);
+        }
         "ping_pong_64B_unlimited" => {
             cmd_arg.req_size = 64;
             cmd_arg.msg_num = u32::max_value();
@@ -59,6 +64,11 @@ fn main() {
         "ping_pong_1MB_1000" => {
             cmd_arg.req_size = 1024 * 1024;
             cmd_arg.msg_num = 1000;
+            client::echo::ping_pong(cmd_arg);
+        }
+        "ping_pong_1MB_10000" => {
+            cmd_arg.req_size = 1024 * 1024;
+            cmd_arg.msg_num = 10000;
             client::echo::ping_pong(cmd_arg);
         }
         "ping_pong_1MB_unlimited" => {
