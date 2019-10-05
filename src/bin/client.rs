@@ -40,9 +40,9 @@ fn main() {
 
     // run cases (Required!)
     match matches.value_of("Case").unwrap() {
-        "ping_pong_64B_2000" => {
+        "ping_pong_64B_1000" => {
             cmd_arg.req_size = 64;
-            cmd_arg.msg_num = 2000;
+            cmd_arg.msg_num = 1000;
             client::echo::ping_pong(cmd_arg);
         }
         "ping_pong_64B_unlimited" => {
@@ -56,9 +56,9 @@ fn main() {
             cmd_arg.thread_num = 4;
             client::echo::ping_pong(cmd_arg);
         }
-        "ping_pong_1MB_2000" => {
+        "ping_pong_1MB_1000" => {
             cmd_arg.req_size = 1024 * 1024;
-            cmd_arg.msg_num = 2000;
+            cmd_arg.msg_num = 1000;
             client::echo::ping_pong(cmd_arg);
         }
         "ping_pong_1MB_unlimited" => {
