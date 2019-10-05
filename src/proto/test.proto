@@ -1,0 +1,15 @@
+syntax = "proto3";
+package test;
+
+message RpcRequest {
+    bytes data = 1;
+}
+
+message RpcResponse {
+    bytes data = 1;
+}
+
+service StreamService {
+    rpc GetStream (stream RpcRequest) returns (RpcResponse);
+    rpc GetUnary (RpcRequest) returns (RpcResponse);
+}
