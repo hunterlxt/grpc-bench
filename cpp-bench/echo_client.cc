@@ -1,10 +1,12 @@
 #include "proto/test.grpc.pb.h"
 #include "util.h"
-#include <ctime>
+#include <chrono>
 #include <grpcpp/grpcpp.h>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
+#include <vector>
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -38,16 +40,34 @@ class RpcClient {
     std::unique_ptr<TestService::Stub> stub_;
 };
 
-int main(int argc, char **argv) {
+void loop_unary(std::string &data) {
     RpcClient client(grpc::CreateChannel("localhost:50051",
                                          grpc::InsecureChannelCredentials()));
-    std::string data = generate_string(1024 * 1024);
-    clock_t start = clock();
-    for (int i = 0; i < 100000; i++) {
+    // unlimited unary
+    while (1) {
         client.unary(data);
     }
-    clock_t finish = clock();
-    double consumeTime = (double)(finish - start) / CLOCKS_PER_SEC;
-    std::cout << "Time usage:" << consumeTime << std::endl;
+}
+
+// 1MB size to unary
+int main(int argc, char **argv) {
+    std::string data = generate_string(64);
+
+    auto start = std::chrono::system_clock::now();
+    int thread_num = 4;
+    std::thread threads[thread_num];
+
+    for (int i = 0; i < thread_num; i++) {
+        threads[i] = std::thread(loop_unary, std::ref(data));
+    }
+    for (int i = 0; i < thread_num; i++) {
+        threads[i].join();
+    }
+
+    auto finish = std::chrono::system_clock::now();
+    auto consumeTime =
+        std::chrono::duration_cast<std::chrono::microseconds>(finish - start)
+            .count();
+    std::cout << "Time usage:" << consumeTime * 1e-6 << std::endl;
     return 0;
 }
