@@ -40,22 +40,17 @@ fn main() {
 
     // run cases (Required!)
     match matches.value_of("Case").unwrap() {
-        "ping_pong_64B_1000" => {
-            cmd_arg.req_size = 64;
-            cmd_arg.msg_num = 1000;
-            client::echo::ping_pong(cmd_arg);
-        }
         "ping_pong_64B_10000" => {
             cmd_arg.req_size = 64;
             cmd_arg.msg_num = 10000;
             client::echo::ping_pong(cmd_arg);
         }
-        "ping_pong_64B_unlimited" => {
+        "ping_pong_64B_max" => {
             cmd_arg.req_size = 64;
             cmd_arg.msg_num = u32::max_value();
             client::echo::ping_pong(cmd_arg);
         }
-        "ping_pong_64B_unlimited_4threads" => {
+        "ping_pong_64B_max_4threads" => {
             cmd_arg.req_size = 64;
             cmd_arg.msg_num = u32::max_value();
             cmd_arg.thread_num = 4;
@@ -71,12 +66,12 @@ fn main() {
             cmd_arg.msg_num = 10000;
             client::echo::ping_pong(cmd_arg);
         }
-        "ping_pong_1MB_unlimited" => {
+        "ping_pong_1MB_max" => {
             cmd_arg.req_size = 1024 * 1024;
             cmd_arg.msg_num = u32::max_value();
             client::echo::ping_pong(cmd_arg);
         }
-        "ping_pong_1MB_unlimited_4threads" => {
+        "ping_pong_1MB_max_4threads" => {
             cmd_arg.req_size = 1024 * 1024;
             cmd_arg.msg_num = u32::max_value();
             cmd_arg.thread_num = 4;

@@ -44,7 +44,7 @@ void loop_unary(std::string &data) {
     RpcClient client(grpc::CreateChannel("localhost:50051",
                                          grpc::InsecureChannelCredentials()));
     // unlimited unary
-    while (1) {
+    for (size_t i = 0; i < 100000; i++) {
         client.unary(data);
     }
 }
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     std::string data = generate_string(64);
 
     auto start = std::chrono::system_clock::now();
-    int thread_num = 4;
+    int thread_num = 1;
     std::thread threads[thread_num];
 
     for (int i = 0; i < thread_num; i++) {
