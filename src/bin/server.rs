@@ -19,19 +19,25 @@ fn main() {
                 .required(true)
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("CqNum")
+                .long("cq")
+                .help("CQ number")
+                .default_value("2")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
     let mut cmd_arg = ServerArg {
         port: matches.value_of("Port").unwrap().parse().unwrap(),
         resp_size: 1,
-        cq_num: 1,
+        cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
     };
 
     // run cases
     match matches.value_of("Case").unwrap() {
-        "ping_pong_2cq" => {
-            cmd_arg.cq_num = 2;
+        "ping_pong" => {
             server::echo::ping_pong(cmd_arg);
         }
         _ => {

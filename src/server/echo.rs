@@ -28,9 +28,8 @@ impl TestService for EchoService {
     }
 }
 
-/// 2 completion queues
 pub fn ping_pong(cmd: ServerArg) {
-    let env = Arc::new(Environment::new(2));
+    let env = Arc::new(Environment::new(cmd.cq_num as _));
     let service = create_test_service(EchoService {});
     let mut server = ServerBuilder::new(env)
         .register_service(service)

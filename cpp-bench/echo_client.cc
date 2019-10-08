@@ -15,6 +15,11 @@ using test::RpcRequest;
 using test::RpcResponse;
 using test::TestService;
 
+/************ Configuration ************/
+const size_t THREAD_NUM = 4;
+const size_t LOOP_NUM = 1000000;
+/************ Configuration ************/
+
 class RpcClient {
   public:
     RpcClient(std::shared_ptr<Channel> channel)
@@ -43,24 +48,20 @@ class RpcClient {
 void loop_unary(std::string &data) {
     RpcClient client(grpc::CreateChannel("localhost:50051",
                                          grpc::InsecureChannelCredentials()));
-    // unlimited unary
-    for (size_t i = 0; i < 100000; i++) {
+    for (size_t i = 0; i < LOOP_NUM; i++) {
         client.unary(data);
     }
 }
 
-// 1MB size to unary
-int main(int argc, char **argv) {
+void run_echo_client() {
     std::string data = generate_string(64);
-
     auto start = std::chrono::system_clock::now();
-    int thread_num = 1;
-    std::thread threads[thread_num];
+    std::thread threads[THREAD_NUM];
 
-    for (int i = 0; i < thread_num; i++) {
+    for (int i = 0; i < THREAD_NUM; i++) {
         threads[i] = std::thread(loop_unary, std::ref(data));
     }
-    for (int i = 0; i < thread_num; i++) {
+    for (int i = 0; i < THREAD_NUM; i++) {
         threads[i].join();
     }
 
@@ -69,5 +70,9 @@ int main(int argc, char **argv) {
         std::chrono::duration_cast<std::chrono::microseconds>(finish - start)
             .count();
     std::cout << "Time usage:" << consumeTime * 1e-6 << std::endl;
+}
+
+int main(int argc, char **argv) {
+    run_echo_client();
     return 0;
 }
