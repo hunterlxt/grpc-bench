@@ -16,9 +16,9 @@ using test::RpcResponse;
 using test::TestService;
 
 /************ Configuration ************/
-const size_t THREAD_NUM = 4;
-const size_t MSG_SIZE = 64;
-const size_t LOOP_NUM = 1000000;
+const size_t THREAD_NUM = 8;
+const size_t MSG_SIZE = 4;
+const size_t LOOP_NUM = 10000;
 /************ Configuration ************/
 
 class RpcClient {
