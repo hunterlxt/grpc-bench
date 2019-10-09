@@ -17,6 +17,7 @@ using test::TestService;
 
 /************ Configuration ************/
 const size_t THREAD_NUM = 4;
+const size_t MSG_SIZE = 64;
 const size_t LOOP_NUM = 1000000;
 /************ Configuration ************/
 
@@ -54,7 +55,7 @@ void loop_unary(std::string &data) {
 }
 
 void run_echo_client() {
-    std::string data = generate_string(64);
+    std::string data = generate_string(MSG_SIZE);
     auto start = std::chrono::system_clock::now();
     std::thread threads[THREAD_NUM];
 

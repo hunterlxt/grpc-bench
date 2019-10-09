@@ -15,9 +15,9 @@ using test::RpcResponse;
 using test::TestService;
 
 /************ Configuration ************/
-const size_t CQ_NUM = 4;
-const size_t MIN_POLLERS = 2;
-const size_t MAX_POLLERS = 2;
+const size_t CQ_NUM = 1;
+const size_t MIN_POLLERS = 1;
+const size_t MAX_POLLERS = 1;
 /************ Configuration ************/
 
 class TestServiceImpl final : public TestService::Service {
