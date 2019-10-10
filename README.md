@@ -14,6 +14,8 @@ cargo run --release --bin client -- --case ping_pong_1MB_10000
 
 `cpp-bench` is to compare performance of the Rust
 
+You need install grpc first
+
 ```bash
 # clean the workspace
 make clean
