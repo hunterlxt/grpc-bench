@@ -9,7 +9,9 @@ use std::thread;
 use std::time;
 
 #[derive(Clone)]
-struct EchoService;
+struct EchoService {
+    cmd: ServerArg,
+}
 
 impl TestService for EchoService {
     fn get_unary(&mut self, ctx: RpcContext, req: RpcRequest, sink: UnarySink<RpcResponse>) {
@@ -30,7 +32,7 @@ impl TestService for EchoService {
 
 pub fn ping_pong(cmd: ServerArg) {
     let env = Arc::new(Environment::new(cmd.cq_num as _));
-    let service = create_test_service(EchoService {});
+    let service = create_test_service(EchoService { cmd: cmd.clone() });
     let mut server = ServerBuilder::new(env)
         .register_service(service)
         .bind("0.0.0.0", cmd.port)
@@ -38,5 +40,5 @@ pub fn ping_pong(cmd: ServerArg) {
         .unwrap();
     server.start();
 
-    thread::sleep(time::Duration::from_secs(12 * 3600));
+    thread::sleep(time::Duration::from_secs(24 * 3600));
 }

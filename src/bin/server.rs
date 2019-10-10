@@ -26,14 +26,25 @@ fn main() {
                 .default_value("2")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("MsgSize")
+                .long("msg_size")
+                .help("Message size to response")
+                .default_value("64")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
     let mut cmd_arg = ServerArg {
         port: matches.value_of("Port").unwrap().parse().unwrap(),
-        resp_size: 1,
+        msg_size: matches.value_of("MsgSize").unwrap().parse().unwrap(),
         cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
     };
+    println!(
+        "==== Configuration ====\n{:?}\n==== Start Case ====",
+        &cmd_arg
+    );
 
     // run cases
     match matches.value_of("Case").unwrap() {
@@ -41,7 +52,7 @@ fn main() {
             server::echo::ping_pong(cmd_arg);
         }
         _ => {
-            println!("Please input valid name, refer to the file in src/bin/");
+            println!("Please input valid name, refer to the binary files");
         }
     }
     println!("Finish all tests");
