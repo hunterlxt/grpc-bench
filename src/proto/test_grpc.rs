@@ -18,16 +18,30 @@
 #![allow(unused_imports)]
 #![allow(unused_results)]
 
+const METHOD_TEST_SERVICE_GET_UNARY: ::grpcio::Method<super::test::RpcRequest, super::test::RpcResponse> = ::grpcio::Method {
+    ty: ::grpcio::MethodType::Unary,
+    name: "/test.TestService/GetUnary",
+    req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+    resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+};
+
 const METHOD_TEST_SERVICE_GET_STREAM: ::grpcio::Method<super::test::RpcRequest, super::test::RpcResponse> = ::grpcio::Method {
-    ty: ::grpcio::MethodType::ClientStreaming,
+    ty: ::grpcio::MethodType::ServerStreaming,
     name: "/test.TestService/GetStream",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
-const METHOD_TEST_SERVICE_GET_UNARY: ::grpcio::Method<super::test::RpcRequest, super::test::RpcResponse> = ::grpcio::Method {
-    ty: ::grpcio::MethodType::Unary,
-    name: "/test.TestService/GetUnary",
+const METHOD_TEST_SERVICE_SEND_STREAM: ::grpcio::Method<super::test::RpcRequest, super::test::RpcResponse> = ::grpcio::Method {
+    ty: ::grpcio::MethodType::ClientStreaming,
+    name: "/test.TestService/SendStream",
+    req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+    resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+};
+
+const METHOD_TEST_SERVICE_BIDIRECT: ::grpcio::Method<super::test::RpcRequest, super::test::RpcResponse> = ::grpcio::Method {
+    ty: ::grpcio::MethodType::Duplex,
+    name: "/test.TestService/Bidirect",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
@@ -42,14 +56,6 @@ impl TestServiceClient {
         TestServiceClient {
             client: ::grpcio::Client::new(channel),
         }
-    }
-
-    pub fn get_stream_opt(&self, opt: ::grpcio::CallOption) -> ::grpcio::Result<(::grpcio::ClientCStreamSender<super::test::RpcRequest>, ::grpcio::ClientCStreamReceiver<super::test::RpcResponse>)> {
-        self.client.client_streaming(&METHOD_TEST_SERVICE_GET_STREAM, opt)
-    }
-
-    pub fn get_stream(&self) -> ::grpcio::Result<(::grpcio::ClientCStreamSender<super::test::RpcRequest>, ::grpcio::ClientCStreamReceiver<super::test::RpcResponse>)> {
-        self.get_stream_opt(::grpcio::CallOption::default())
     }
 
     pub fn get_unary_opt(&self, req: &super::test::RpcRequest, opt: ::grpcio::CallOption) -> ::grpcio::Result<super::test::RpcResponse> {
@@ -67,25 +73,59 @@ impl TestServiceClient {
     pub fn get_unary_async(&self, req: &super::test::RpcRequest) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::test::RpcResponse>> {
         self.get_unary_async_opt(req, ::grpcio::CallOption::default())
     }
+
+    pub fn get_stream_opt(&self, req: &super::test::RpcRequest, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::test::RpcResponse>> {
+        self.client.server_streaming(&METHOD_TEST_SERVICE_GET_STREAM, req, opt)
+    }
+
+    pub fn get_stream(&self, req: &super::test::RpcRequest) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::test::RpcResponse>> {
+        self.get_stream_opt(req, ::grpcio::CallOption::default())
+    }
+
+    pub fn send_stream_opt(&self, opt: ::grpcio::CallOption) -> ::grpcio::Result<(::grpcio::ClientCStreamSender<super::test::RpcRequest>, ::grpcio::ClientCStreamReceiver<super::test::RpcResponse>)> {
+        self.client.client_streaming(&METHOD_TEST_SERVICE_SEND_STREAM, opt)
+    }
+
+    pub fn send_stream(&self) -> ::grpcio::Result<(::grpcio::ClientCStreamSender<super::test::RpcRequest>, ::grpcio::ClientCStreamReceiver<super::test::RpcResponse>)> {
+        self.send_stream_opt(::grpcio::CallOption::default())
+    }
+
+    pub fn bidirect_opt(&self, opt: ::grpcio::CallOption) -> ::grpcio::Result<(::grpcio::ClientDuplexSender<super::test::RpcRequest>, ::grpcio::ClientDuplexReceiver<super::test::RpcResponse>)> {
+        self.client.duplex_streaming(&METHOD_TEST_SERVICE_BIDIRECT, opt)
+    }
+
+    pub fn bidirect(&self) -> ::grpcio::Result<(::grpcio::ClientDuplexSender<super::test::RpcRequest>, ::grpcio::ClientDuplexReceiver<super::test::RpcResponse>)> {
+        self.bidirect_opt(::grpcio::CallOption::default())
+    }
     pub fn spawn<F>(&self, f: F) where F: ::futures::Future<Item = (), Error = ()> + Send + 'static {
         self.client.spawn(f)
     }
 }
 
 pub trait TestService {
-    fn get_stream(&mut self, ctx: ::grpcio::RpcContext, stream: ::grpcio::RequestStream<super::test::RpcRequest>, sink: ::grpcio::ClientStreamingSink<super::test::RpcResponse>);
     fn get_unary(&mut self, ctx: ::grpcio::RpcContext, req: super::test::RpcRequest, sink: ::grpcio::UnarySink<super::test::RpcResponse>);
+    fn get_stream(&mut self, ctx: ::grpcio::RpcContext, req: super::test::RpcRequest, sink: ::grpcio::ServerStreamingSink<super::test::RpcResponse>);
+    fn send_stream(&mut self, ctx: ::grpcio::RpcContext, stream: ::grpcio::RequestStream<super::test::RpcRequest>, sink: ::grpcio::ClientStreamingSink<super::test::RpcResponse>);
+    fn bidirect(&mut self, ctx: ::grpcio::RpcContext, stream: ::grpcio::RequestStream<super::test::RpcRequest>, sink: ::grpcio::DuplexSink<super::test::RpcResponse>);
 }
 
 pub fn create_test_service<S: TestService + Send + Clone + 'static>(s: S) -> ::grpcio::Service {
     let mut builder = ::grpcio::ServiceBuilder::new();
     let mut instance = s.clone();
-    builder = builder.add_client_streaming_handler(&METHOD_TEST_SERVICE_GET_STREAM, move |ctx, req, resp| {
-        instance.get_stream(ctx, req, resp)
-    });
-    let mut instance = s;
     builder = builder.add_unary_handler(&METHOD_TEST_SERVICE_GET_UNARY, move |ctx, req, resp| {
         instance.get_unary(ctx, req, resp)
+    });
+    let mut instance = s.clone();
+    builder = builder.add_server_streaming_handler(&METHOD_TEST_SERVICE_GET_STREAM, move |ctx, req, resp| {
+        instance.get_stream(ctx, req, resp)
+    });
+    let mut instance = s.clone();
+    builder = builder.add_client_streaming_handler(&METHOD_TEST_SERVICE_SEND_STREAM, move |ctx, req, resp| {
+        instance.send_stream(ctx, req, resp)
+    });
+    let mut instance = s;
+    builder = builder.add_duplex_streaming_handler(&METHOD_TEST_SERVICE_BIDIRECT, move |ctx, req, resp| {
+        instance.bidirect(ctx, req, resp)
     });
     builder.build()
 }

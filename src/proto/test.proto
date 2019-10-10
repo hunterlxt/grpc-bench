@@ -10,6 +10,8 @@ message RpcResponse {
 }
 
 service TestService {
-    rpc GetStream (stream RpcRequest) returns (RpcResponse);
     rpc GetUnary (RpcRequest) returns (RpcResponse);
+    rpc GetStream (RpcRequest) returns (stream RpcResponse);
+    rpc SendStream (stream RpcRequest) returns (RpcResponse);
+    rpc Bidirect (stream RpcRequest) returns (stream RpcResponse);
 }

@@ -2,7 +2,8 @@ use crate::proto::test::{RpcRequest, RpcResponse};
 use crate::proto::test_grpc::{create_test_service, TestService};
 use crate::ServerArg;
 use grpcio::{
-    ClientStreamingSink, Environment, RequestStream, RpcContext, ServerBuilder, UnarySink,
+    ClientStreamingSink, DuplexSink, Environment, RequestStream, RpcContext, ServerBuilder,
+    ServerStreamingSink, UnarySink,
 };
 use std::sync::Arc;
 use std::thread;
@@ -24,8 +25,24 @@ impl TestService for EchoService {
     fn get_stream(
         &mut self,
         ctx: RpcContext,
-        stream: RequestStream<RpcRequest>,
+        req: RpcRequest,
+        sink: ServerStreamingSink<RpcResponse>,
+    ) {
+    }
+
+    fn send_stream(
+        &mut self,
+        ctx: RpcContext,
+        req: RequestStream<RpcRequest>,
         sink: ClientStreamingSink<RpcResponse>,
+    ) {
+    }
+
+    fn bidirect(
+        &mut self,
+        ctx: RpcContext,
+        stream: RequestStream<RpcRequest>,
+        sink: DuplexSink<RpcResponse>,
     ) {
     }
 }
