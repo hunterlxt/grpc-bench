@@ -48,10 +48,17 @@ fn main() {
                 .default_value("1")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("Quota")
+                .long("quota_size")
+                .help("Memory quota size")
+                .default_value("51200")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
-    let mut cmd_arg = ClientArg {
+    let cmd_arg = ClientArg {
         ip: matches.value_of("IP").unwrap().to_owned(),
         port: matches.value_of("Port").unwrap().parse().unwrap(),
         msg_size: matches.value_of("MsgSize").unwrap().parse().unwrap(),
@@ -67,6 +74,9 @@ fn main() {
     match matches.value_of("Case").unwrap() {
         "unary_call" => {
             client::echo::unary_call(cmd_arg);
+        }
+        "stream_call" => {
+            client::echo::stream_call(cmd_arg);
         }
         _ => {
             println!("Please input valid name, refer to the file in src/bin/");

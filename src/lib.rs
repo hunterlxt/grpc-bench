@@ -13,6 +13,7 @@ pub struct ServerArg {
     pub port: u16,
     pub msg_size: u32,
     pub cq_num: u32,
+    pub quota_size: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -22,4 +23,5 @@ pub struct ClientArg {
     pub msg_size: u32,
     pub msg_num: u32,
     pub thread_num: u32,
+    pub quota_size: usize,
 }

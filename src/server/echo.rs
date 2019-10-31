@@ -1,9 +1,11 @@
 use crate::proto::test::{RpcRequest, RpcResponse};
 use crate::proto::test_grpc::{create_test_service, TestService};
 use crate::ServerArg;
+use futures::*;
+use grpcio::*;
 use grpcio::{
-    ClientStreamingSink, DuplexSink, Environment, RequestStream, RpcContext, ServerBuilder,
-    ServerStreamingSink, UnarySink,
+    ChannelBuilder, ClientStreamingSink, DuplexSink, Environment, Error, RequestStream,
+    ResourceQuota, RpcContext, ServerBuilder, ServerStreamingSink, UnarySink,
 };
 use std::sync::Arc;
 use std::thread;
@@ -19,7 +21,8 @@ impl TestService for EchoService {
         let msg = req.get_data();
         let mut resp = RpcResponse::default();
         resp.set_data(msg.to_vec());
-        sink.success(resp);
+        let f = sink.success(resp).map_err(|_| {});
+        ctx.spawn(f);
     }
 
     fn get_stream(
@@ -44,15 +47,34 @@ impl TestService for EchoService {
         stream: RequestStream<RpcRequest>,
         sink: DuplexSink<RpcResponse>,
     ) {
+        let f = sink
+            .sink_map_err(|e| Error::GoogleAuthenticationFailed)
+            .send_all(
+                stream
+                    .map_err(|e| Error::GoogleAuthenticationFailed)
+                    .and_then(move |req| {
+                        let msg = req.get_data();
+                        let mut resp = RpcResponse::default();
+                        resp.set_data(msg.to_vec());
+                        Ok(Some((resp, WriteFlags::default())))
+                    })
+                    .filter_map(|o| o),
+            )
+            .map(|_| ())
+            .map_err(|e| {});
+        ctx.spawn(f);
     }
 }
 
 pub fn ping_pong(cmd: ServerArg) {
     let env = Arc::new(Environment::new(cmd.cq_num as _));
+    let quota = ResourceQuota::new(Some("HelloServerQuota")).resize_memory(cmd.quota_size);
+    let ch_builder = ChannelBuilder::new(env.clone()).set_resource_quota(quota);
     let service = create_test_service(EchoService { cmd: cmd.clone() });
     let mut server = ServerBuilder::new(env)
         .register_service(service)
         .bind("0.0.0.0", cmd.port)
+        .channel_args(ch_builder.build_args())
         .build()
         .unwrap();
     server.start();

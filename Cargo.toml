@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-grpcio = "0.5.0-alpha.4"
-grpcio-sys = "0.5.0-alpha.4"
+grpcio = { path = "../grpc-rs" }
+grpcio-sys = { path = "../grpc-rs/grpc-sys" }
 protobuf = "2.0"
 clap = "2.33"
 rand = "0.7"

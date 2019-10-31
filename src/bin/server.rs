@@ -33,6 +33,13 @@ fn main() {
                 .default_value("64")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("Quota")
+                .long("quota_size")
+                .help("Memory quota size")
+                .default_value("51200")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
@@ -40,6 +47,7 @@ fn main() {
         port: matches.value_of("Port").unwrap().parse().unwrap(),
         msg_size: matches.value_of("MsgSize").unwrap().parse().unwrap(),
         cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
+        quota_size: matches.value_of("Quota").unwrap().parse().unwrap(),
     };
     println!(
         "==== Configuration ====\n{:?}\n==== Start Case ====",
