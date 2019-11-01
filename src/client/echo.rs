@@ -61,16 +61,18 @@ pub fn stream_call(cmd: ClientArg) {
                 let mut req = RpcRequest::default();
                 req.set_data(bytes.clone());
                 tx = tx.send((req, WriteFlags::default())).wait().unwrap();
-                match rx.into_future().wait() {
-                    Ok((Some(resp), r)) => {
-                        rx = r;
-                    }
-                    Ok((None, r)) => {
-                        println!("Get none msg");
-                        rx = r;
-                    }
-                    _ => unimplemented!(),
+            }
+            future::poll_fn(|| tx.close()).wait().unwrap();
+            match rx.into_future().wait() {
+                Ok((Some(resp), r)) => {
+                    rx = r;
+                    assert_eq!(cmd.msg_num as usize, resp.get_data().len());
                 }
+                Ok((None, r)) => {
+                    println!("Get none msg");
+                    rx = r;
+                }
+                _ => unimplemented!(),
             }
         }));
     }

@@ -1,6 +1,8 @@
 use crate::proto::test::{RpcRequest, RpcResponse};
 use crate::proto::test_grpc::{create_test_service, TestService};
+use crate::util::generate_bytes;
 use crate::ServerArg;
+use futures::Stream;
 use futures::*;
 use grpcio::*;
 use grpcio::{
@@ -21,6 +23,7 @@ impl TestService for EchoService {
         let msg = req.get_data();
         let mut resp = RpcResponse::default();
         resp.set_data(msg.to_vec());
+        std::thread::sleep(std::time::Duration::from_secs(3));
         let f = sink.success(resp).map_err(|_| {});
         ctx.spawn(f);
     }
@@ -47,21 +50,34 @@ impl TestService for EchoService {
         stream: RequestStream<RpcRequest>,
         sink: DuplexSink<RpcResponse>,
     ) {
-        let f = sink
-            .sink_map_err(|e| Error::GoogleAuthenticationFailed)
-            .send_all(
-                stream
-                    .map_err(|e| Error::GoogleAuthenticationFailed)
-                    .and_then(move |req| {
-                        let msg = req.get_data();
-                        let mut resp = RpcResponse::default();
-                        resp.set_data(msg.to_vec());
-                        Ok(Some((resp, WriteFlags::default())))
-                    })
-                    .filter_map(|o| o),
-            )
+        let f = stream
+            .fold(0, move |mut sum, mut req| {
+                let _msg = req.get_data();
+                sum += 1;
+                println!("sum:{}", sum);
+                Ok(sum) as Result<_>
+            })
+            .and_then(move |sum| {
+                let mut resp = RpcResponse::default();
+                resp.set_data(generate_bytes(sum));
+                sink.send((resp, WriteFlags::default()))
+            })
             .map(|_| ())
             .map_err(|e| {});
+        //     .sink_map_err(|e| Error::GoogleAuthenticationFailed)
+        //     .send_all(
+        //         stream
+        //             .map_err(|e| Error::GoogleAuthenticationFailed)
+        //             .and_then(move |req| {
+        //                 let msg = req.get_data();
+        //                 let mut resp = RpcResponse::default();
+        //                 resp.set_data(msg.to_vec());
+        //                 Ok(Some((resp, WriteFlags::default())))
+        //             })
+        //             .filter_map(|o| o),
+        //     )
+        //     .map(|_| ())
+        //     .map_err(|e| {});
         ctx.spawn(f);
     }
 }
