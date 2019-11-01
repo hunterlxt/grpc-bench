@@ -3,7 +3,7 @@ use crate::proto::test_grpc::TestServiceClient;
 use crate::util::generate_bytes;
 use crate::ClientArg;
 use futures::*;
-use grpcio::{ChannelBuilder, Environment, WriteFlags};
+use grpcio::{ChannelBuilder, Environment, ResourceQuota, WriteFlags};
 use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
@@ -45,7 +45,9 @@ pub fn stream_call(cmd: ClientArg) {
     let mut count = 0;
     let env = Arc::new(Environment::new(1));
     let addr = format!("{}:{}", cmd.ip, cmd.port);
-    let ch = ChannelBuilder::new(env).connect(addr.as_str());
+    let ch = ChannelBuilder::new(env)
+        .max_receive_message_len(1 << 10)
+        .connect(addr.as_str());
     let bytes = generate_bytes(cmd.msg_size);
     let mut workers = vec![];
     let now = Instant::now();

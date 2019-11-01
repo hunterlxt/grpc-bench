@@ -64,6 +64,7 @@ fn main() {
         msg_size: matches.value_of("MsgSize").unwrap().parse().unwrap(),
         msg_num: matches.value_of("MsgNum").unwrap().parse().unwrap(),
         thread_num: matches.value_of("ThreadNum").unwrap().parse().unwrap(),
+        quota_size: matches.value_of("Quota").unwrap().parse().unwrap(),
     };
     println!(
         "==== Configuration ====\n{:?}\n==== Start Case ====",
