@@ -69,8 +69,7 @@ pub fn bidirect_stream(cmd: ClientArg) {
                     assert_eq!(cmd.msg_num as usize, resp.get_data().len());
                 }
                 Ok((None, r)) => {
-                    println!("Get none msg");
-                    rx = r;
+                    panic!("Get none msg");
                 }
                 Err((e, r)) => {
                     println!("{:?}", e);
