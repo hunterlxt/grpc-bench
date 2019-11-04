@@ -76,8 +76,11 @@ fn main() {
         "unary_call" => {
             client::echo::unary_call(cmd_arg);
         }
-        "stream_call" => {
-            client::echo::stream_call(cmd_arg);
+        "bidirect_stream" => {
+            client::echo::bidirect_stream(cmd_arg);
+        }
+        "send_stream" => {
+            client::echo::send_stream(cmd_arg);
         }
         _ => {
             println!("Please input valid name, refer to the file in src/bin/");

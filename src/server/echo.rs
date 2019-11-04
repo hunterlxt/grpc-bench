@@ -39,9 +39,23 @@ impl TestService for EchoService {
     fn send_stream(
         &mut self,
         ctx: RpcContext,
-        req: RequestStream<RpcRequest>,
+        stream: RequestStream<RpcRequest>,
         sink: ClientStreamingSink<RpcResponse>,
     ) {
+        let f = stream
+            .fold(0, move |mut sum, mut req| {
+                let _msg = req.get_data();
+                sum += 1;
+                Ok(sum) as Result<_>
+            })
+            .and_then(move |sum| {
+                println!("sum:{}", sum);
+                let mut resp = RpcResponse::default();
+                resp.set_data(generate_bytes(sum));
+                sink.success(resp)
+            })
+            .map_err(|_| {});
+        ctx.spawn(f);
     }
 
     fn bidirect(
@@ -62,8 +76,10 @@ impl TestService for EchoService {
                 resp.set_data(generate_bytes(sum));
                 sink.send((resp, WriteFlags::default()))
             })
-            .map(|_| ())
-            .map_err(|e| {});
+            .map(|mut sink| {
+                future::poll_fn(move || sink.close()).wait().unwrap();
+            })
+            .map_err(|_| {});
         //     .sink_map_err(|e| Error::GoogleAuthenticationFailed)
         //     .send_all(
         //         stream

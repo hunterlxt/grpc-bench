@@ -41,7 +41,7 @@ pub fn unary_call(cmd: ClientArg) {
     );
 }
 
-pub fn stream_call(cmd: ClientArg) {
+pub fn bidirect_stream(cmd: ClientArg) {
     let mut count = 0;
     let env = Arc::new(Environment::new(1));
     let addr = format!("{}:{}", cmd.ip, cmd.port);
@@ -72,8 +72,46 @@ pub fn stream_call(cmd: ClientArg) {
                     println!("Get none msg");
                     rx = r;
                 }
-                _ => unimplemented!(),
+                Err((e, r)) => {
+                    println!("{:?}", e);
+                    panic!("Received an error");
+                }
             }
+        }));
+    }
+
+    for worker in workers {
+        worker.join().expect("join the worker thread");
+    }
+    println!(
+        "stream_call test finished after {}",
+        now.elapsed().as_secs_f64()
+    );
+}
+
+pub fn send_stream(cmd: ClientArg) {
+    let mut count = 0;
+    let env = Arc::new(Environment::new(1));
+    let addr = format!("{}:{}", cmd.ip, cmd.port);
+    let ch = ChannelBuilder::new(env)
+        .max_receive_message_len(1 << 10)
+        .connect(addr.as_str());
+    let bytes = generate_bytes(cmd.msg_size);
+    let mut workers = vec![];
+    let now = Instant::now();
+    for _ in 0..cmd.thread_num {
+        let bytes = bytes.clone();
+        let cmd = cmd.clone();
+        let client = Arc::new(TestServiceClient::new(ch.clone()));
+        workers.push(thread::spawn(move || {
+            let (mut tx, mut rx) = client.send_stream().unwrap();
+            for _ in 0..cmd.msg_num {
+                let mut req = RpcRequest::default();
+                req.set_data(bytes.clone());
+                tx = tx.send((req, WriteFlags::default())).wait().unwrap();
+            }
+            future::poll_fn(|| tx.close()).wait().unwrap();
+            let _ = rx.wait().unwrap();
         }));
     }
 
