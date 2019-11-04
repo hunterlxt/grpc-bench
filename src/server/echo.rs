@@ -68,10 +68,10 @@ impl TestService for EchoService {
             .fold(0, move |mut sum, mut req| {
                 let _msg = req.get_data();
                 sum += 1;
-                println!("sum:{}", sum);
                 Ok(sum) as Result<_>
             })
             .and_then(move |sum| {
+                println!("sum:{}", sum);
                 let mut resp = RpcResponse::default();
                 resp.set_data(generate_bytes(sum));
                 sink.send((resp, WriteFlags::default()))
