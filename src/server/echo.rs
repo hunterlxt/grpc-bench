@@ -76,24 +76,9 @@ impl TestService for EchoService {
                 resp.set_data(generate_bytes(sum));
                 sink.send((resp, WriteFlags::default()))
             })
-            .map(|mut sink| {
-                future::poll_fn(move || sink.close()).wait().unwrap();
-            })
-            .map_err(|_| {});
-        //     .sink_map_err(|e| Error::GoogleAuthenticationFailed)
-        //     .send_all(
-        //         stream
-        //             .map_err(|e| Error::GoogleAuthenticationFailed)
-        //             .and_then(move |req| {
-        //                 let msg = req.get_data();
-        //                 let mut resp = RpcResponse::default();
-        //                 resp.set_data(msg.to_vec());
-        //                 Ok(Some((resp, WriteFlags::default())))
-        //             })
-        //             .filter_map(|o| o),
-        //     )
-        //     .map(|_| ())
-        //     .map_err(|e| {});
+            .map(|mut sink| future::poll_fn(move || sink.close().map_err(|_| {})))
+            .map_err(|_| {})
+            .map(|_| {});
         ctx.spawn(f);
     }
 }
