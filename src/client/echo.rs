@@ -93,7 +93,7 @@ pub fn send_stream(cmd: ClientArg) {
     let env = Arc::new(Environment::new(1));
     let addr = format!("{}:{}", cmd.ip, cmd.port);
     let ch = ChannelBuilder::new(env)
-        .max_receive_message_len(1 << 10)
+        .max_receive_message_len(1 << 30)
         .connect(addr.as_str());
     let bytes = generate_bytes(cmd.msg_size);
     let mut workers = vec![];
@@ -107,10 +107,14 @@ pub fn send_stream(cmd: ClientArg) {
             for _ in 0..cmd.msg_num {
                 let mut req = RpcRequest::default();
                 req.set_data(bytes.clone());
-                tx = tx.send((req, WriteFlags::default())).wait().unwrap();
+                tx = tx
+                    .send((req, WriteFlags::default().buffer_hint(true)))
+                    .wait()
+                    .unwrap();
             }
             future::poll_fn(|| tx.close()).wait().unwrap();
-            let _ = rx.wait().unwrap();
+            let resp = rx.wait().unwrap();
+            assert_eq!(resp.get_data().len(), cmd.msg_num as _);
         }));
     }
 

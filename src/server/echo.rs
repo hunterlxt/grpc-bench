@@ -43,15 +43,14 @@ impl TestService for EchoService {
         sink: ClientStreamingSink<RpcResponse>,
     ) {
         let f = stream
-            .fold(0, move |mut sum, mut req| {
-                let _msg = req.get_data();
-                sum += 1;
-                Ok(sum) as Result<_>
+            .fold(vec![], move |mut reqs, mut req| {
+                std::thread::sleep(std::time::Duration::from_secs(30));
+                reqs.push(0);
+                Ok(reqs) as Result<_>
             })
-            .and_then(move |sum| {
-                println!("sum:{}", sum);
+            .and_then(move |reqs| {
                 let mut resp = RpcResponse::default();
-                resp.set_data(generate_bytes(sum));
+                resp.set_data(generate_bytes(reqs.len() as u32));
                 sink.success(resp)
             })
             .map_err(|_| {});
@@ -86,7 +85,9 @@ impl TestService for EchoService {
 pub fn ping_pong(cmd: ServerArg) {
     let env = Arc::new(Environment::new(cmd.cq_num as _));
     let quota = ResourceQuota::new(Some("HelloServerQuota")).resize_memory(cmd.quota_size);
-    let ch_builder = ChannelBuilder::new(env.clone()).set_resource_quota(quota);
+    let ch_builder = ChannelBuilder::new(env.clone())
+        .set_resource_quota(quota)
+        .max_concurrent_stream(1024);
     let service = create_test_service(EchoService { cmd: cmd.clone() });
     let mut server = ServerBuilder::new(env)
         .register_service(service)
