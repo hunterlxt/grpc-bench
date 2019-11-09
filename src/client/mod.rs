@@ -58,7 +58,8 @@ pub fn send_stream(cmd: ClientArg) {
         workers.push(thread::spawn(move || {
             let quota = ResourceQuota::new(Some("ClientQuota")).resize_memory(cmd.quota_size);
             let ch = ChannelBuilder::new(env)
-                .max_concurrent_stream(cmd.max_recv_msg_len)
+                .max_concurrent_stream(cmd.max_concurrent_stream)
+                .max_receive_message_len(cmd.max_recv_msg_len)
                 .set_resource_quota(quota)
                 .connect(addr.as_str());
             let client = TestServiceClient::new(ch);
@@ -98,7 +99,8 @@ pub fn bidirect_stream(cmd: ClientArg) {
         workers.push(thread::spawn(move || {
             let quota = ResourceQuota::new(Some("ClientQuota")).resize_memory(cmd.quota_size);
             let ch = ChannelBuilder::new(env)
-                .max_concurrent_stream(cmd.max_recv_msg_len)
+                .max_concurrent_stream(cmd.max_concurrent_stream)
+                .max_receive_message_len(cmd.max_recv_msg_len)
                 .set_resource_quota(quota)
                 .connect(addr.as_str());
             let client = TestServiceClient::new(ch);

@@ -96,7 +96,8 @@ pub fn run_test_server(cmd: ServerArg) {
     let env = Arc::new(Environment::new(cmd.cq_num as _));
     let quota = ResourceQuota::new(Some("TestServerQuota")).resize_memory(cmd.quota_size);
     let ch_builder = ChannelBuilder::new(env.clone())
-        .max_concurrent_stream(cmd.max_recv_msg_len)
+        .max_concurrent_stream(cmd.max_concurrent_stream)
+        .max_receive_message_len(cmd.max_recv_msg_len)
         .set_resource_quota(quota);
     let service = create_test_service(EchoService { cmd: cmd.clone() });
     let mut server = ServerBuilder::new(env)

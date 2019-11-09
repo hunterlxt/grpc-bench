@@ -69,6 +69,13 @@ fn main() {
                 .default_value("1048576")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("max_concurrent_stream")
+                .long("max_concurrent_stream")
+                .help("max_concurrent_stream")
+                .default_value("1024")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
@@ -82,6 +89,11 @@ fn main() {
         cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
         max_recv_msg_len: matches
             .value_of("max_recv_msg_len")
+            .unwrap()
+            .parse()
+            .unwrap(),
+        max_concurrent_stream: matches
+            .value_of("max_concurrent_stream")
             .unwrap()
             .parse()
             .unwrap(),

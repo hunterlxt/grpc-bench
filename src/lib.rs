@@ -17,6 +17,7 @@ pub struct ServerArg {
     pub cal_time: Option<u32>,
     pub sleep_time: Option<u32>,
     pub max_recv_msg_len: i32,
+    pub max_concurrent_stream: i32,
 }
 
 #[derive(Clone, Debug)]
@@ -29,4 +30,5 @@ pub struct ClientArg {
     pub quota_size: usize,
     pub cq_num: u32,
     pub max_recv_msg_len: i32,
+    pub max_concurrent_stream: i32,
 }
