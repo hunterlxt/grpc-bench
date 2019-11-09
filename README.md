@@ -1,24 +1,24 @@
 # grpc-bench
 some bench case for grpc-rs
 
-## Rust bench
+## Rust Usage
 
 Run the test case which you want.
 
 ```bash
-cargo run --release --bin server -- --case ping_pong_2cq
-cargo run --release --bin client -- --case ping_pong_1MB_10000
+cargo run --release --bin server -- --case test --cq 4 --port 50000 --quota_size 1000000
+cargo run --release --bin client -- --case send_stream --port 50000 --cq 2 --thread_num 1 --msg_num 1 --msg_size 1000 --quota_size 1000000
 ```
 
-## C++ bench
+## C++ Usage
 
-`cpp-bench` is to compare performance of the Rust
+`cpp-bench` is to compare performance of the Rust. Because Rust and CPP use the same proto protocol, you can even use Rust as server and CPP as client.
 
 You need install grpc first
 
 ```bash
-# clean the workspace
+make
+./server 1 1 1
+./client 4 1000 1000
 make clean
-# build the client & server to echo
-make echo
 ```

@@ -13,6 +13,7 @@ protobuf = "2.0"
 clap = "2.33"
 rand = "0.7"
 futures = "0.1"
+tokio-timer = "0.2"
 
 [[bin]]
 name = "server"

@@ -11,10 +11,10 @@ GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 PROTOS_PATH = proto
 vpath %.proto $(PROTOS_PATH)
 
+make: client server
+
 clean:
 	rm -rf *.o proto/*.o client server proto/*.h proto/*.cc
-
-echo: client server
 
 client: proto/test.pb.o proto/test.grpc.pb.o echo_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
@@ -29,9 +29,6 @@ server: proto/test.pb.o proto/test.grpc.pb.o echo_server.o
 .PRECIOUS: %.pb.cc
 %.pb.cc: %.proto
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=proto $<
-
-
-
 
 PROTOC_CMD = which $(PROTOC)
 PROTOC_CHECK_CMD = $(PROTOC) --version | grep -q libprotoc.3

@@ -40,24 +40,58 @@ fn main() {
                 .default_value("51200")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("CalculateTime")
+                .long("cal_time")
+                .help("Calculate time each call")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("SleepTime")
+                .long("sleep_time")
+                .help("Simulate IO time each call")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("max_recv_msg_len")
+                .long("max_recv_msg_len")
+                .help("max_recv_msg_len")
+                .default_value("1048576")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
-    let mut cmd_arg = ServerArg {
+    let cmd_arg = ServerArg {
         port: matches.value_of("Port").unwrap().parse().unwrap(),
         msg_size: matches.value_of("MsgSize").unwrap().parse().unwrap(),
         cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
         quota_size: matches.value_of("Quota").unwrap().parse().unwrap(),
+        cal_time: if let Some(s) = matches.value_of("CalculateTime") {
+            Some(s.parse().unwrap())
+        } else {
+            None
+        },
+        sleep_time: if let Some(s) = matches.value_of("SleepTime") {
+            Some(s.parse().unwrap())
+        } else {
+            None
+        },
+        max_recv_msg_len: matches
+            .value_of("max_recv_msg_len")
+            .unwrap()
+            .parse()
+            .unwrap(),
     };
     println!(
-        "==== Configuration ====\n{:?}\n==== Start Case ====",
+        "==== Configuration ====\n{:?}\n==== Configuration ====",
         &cmd_arg
     );
 
     // run cases
     match matches.value_of("Case").unwrap() {
-        "ping_pong" => {
-            server::echo::ping_pong(cmd_arg);
+        "test" => {
+            server::run_test_server(cmd_arg);
         }
         _ => {
             println!("Please input valid name, refer to the binary files");

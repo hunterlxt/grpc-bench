@@ -55,6 +55,20 @@ fn main() {
                 .default_value("51200")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("CqNum")
+                .long("cq")
+                .help("CQ number")
+                .default_value("2")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("max_recv_msg_len")
+                .long("max_recv_msg_len")
+                .help("max_recv_msg_len")
+                .default_value("1048576")
+                .takes_value(true),
+        )
         .get_matches();
 
     // config initial args
@@ -65,22 +79,28 @@ fn main() {
         msg_num: matches.value_of("MsgNum").unwrap().parse().unwrap(),
         thread_num: matches.value_of("ThreadNum").unwrap().parse().unwrap(),
         quota_size: matches.value_of("Quota").unwrap().parse().unwrap(),
+        cq_num: matches.value_of("CqNum").unwrap().parse().unwrap(),
+        max_recv_msg_len: matches
+            .value_of("max_recv_msg_len")
+            .unwrap()
+            .parse()
+            .unwrap(),
     };
     println!(
-        "==== Configuration ====\n{:?}\n==== Start Case ====",
+        "==== Configuration ====\n{:?}\n==== Configuration ====",
         &cmd_arg
     );
 
     // run cases (Required!)
     match matches.value_of("Case").unwrap() {
         "unary_call" => {
-            client::echo::unary_call(cmd_arg);
+            client::unary_call(cmd_arg);
         }
         "bidirect_stream" => {
-            client::echo::bidirect_stream(cmd_arg);
+            client::bidirect_stream(cmd_arg);
         }
         "send_stream" => {
-            client::echo::send_stream(cmd_arg);
+            client::send_stream(cmd_arg);
         }
         _ => {
             println!("Please input valid name, refer to the file in src/bin/");

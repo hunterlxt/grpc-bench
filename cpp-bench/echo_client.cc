@@ -15,53 +15,83 @@ using test::RpcRequest;
 using test::RpcResponse;
 using test::TestService;
 
-/************ Configuration ************/
-const size_t THREAD_NUM = 8;
-const size_t MSG_SIZE = 4;
-const size_t LOOP_NUM = 10000;
-/************ Configuration ************/
+typedef enum {
+    UNARY,
+    STREAM,
+} Mode;
 
-class RpcClient {
-  public:
-    RpcClient(std::shared_ptr<Channel> channel)
-        : stub_(TestService::NewStub(channel)) {}
+/************ Default Configuration ************/
+size_t THREAD_NUM = 4;
+size_t MSG_SIZE = 1000;
+size_t LOOP_NUM = 1000;
+Mode DEFAULT_MODE = UNARY;
+/************ Default Configuration ************/
 
-    std::string unary(const std::string &user) {
+void loop_unary(std::string &data) {
+
+    auto stub = TestService::NewStub(grpc::CreateChannel(
+        "localhost:50051", grpc::InsecureChannelCredentials()));
+
+    for (size_t i = 0; i < LOOP_NUM; i++) {
         RpcRequest request;
-        request.set_data(user);
+        request.set_data(data);
         RpcResponse reply;
         ClientContext context;
-        // The actual RPC.
-        Status status = stub_->GetUnary(&context, request, &reply);
+        Status status = stub->GetUnary(&context, request, &reply);
         if (status.ok()) {
-            return reply.data();
+            return;
         } else {
             std::cout << status.error_code() << ": " << status.error_message()
                       << std::endl;
             exit(-1);
         }
     }
+}
 
-  private:
-    std::unique_ptr<TestService::Stub> stub_;
-};
+void loop_stream(std::string &data) {
+    auto stub = TestService::NewStub(grpc::CreateChannel(
+        "localhost:50051", grpc::InsecureChannelCredentials()));
 
-void loop_unary(std::string &data) {
-    RpcClient client(grpc::CreateChannel("localhost:50051",
-                                         grpc::InsecureChannelCredentials()));
+    RpcResponse reply;
+    ClientContext context;
+    auto stream = stub->SendStream(&context, &reply);
+
     for (size_t i = 0; i < LOOP_NUM; i++) {
-        client.unary(data);
+        RpcRequest request;
+        request.set_data(data);
+        stream->Write(request);
+    }
+    stream->WritesDone();
+    auto status = stream->Finish();
+    if (status.ok()) {
+        if (reply.data().length() != LOOP_NUM) {
+            exit(-1);
+        }
+        return;
+    } else {
+        std::cout << status.error_code() << ": " << status.error_message()
+                  << std::endl;
+        exit(-1);
     }
 }
 
-void run_echo_client() {
+void RunClient() {
     std::string data = generate_string(MSG_SIZE);
     auto start = std::chrono::system_clock::now();
     std::thread threads[THREAD_NUM];
 
     for (int i = 0; i < THREAD_NUM; i++) {
-        threads[i] = std::thread(loop_unary, std::ref(data));
+        switch (DEFAULT_MODE) {
+        case UNARY:
+            threads[i] = std::thread(loop_unary, std::ref(data));
+            break;
+
+        case STREAM:
+            threads[i] = std::thread(loop_stream, std::ref(data));
+            break;
+        }
     }
+
     for (int i = 0; i < THREAD_NUM; i++) {
         threads[i].join();
     }
@@ -74,6 +104,19 @@ void run_echo_client() {
 }
 
 int main(int argc, char **argv) {
-    run_echo_client();
+    for (size_t i = 1; i < argc; i += 1) {
+        switch (i) {
+        case 1:
+            THREAD_NUM = atoi(argv[i]);
+            break;
+        case 2:
+            MSG_SIZE = atoi(argv[i]);
+            break;
+        case 3:
+            LOOP_NUM = atoi(argv[i]);
+            break;
+        }
+    }
+    RunClient();
     return 0;
 }
